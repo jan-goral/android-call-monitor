@@ -1,5 +1,6 @@
 package cc.jang.callmonitor
 
+import kotlinx.coroutines.flow.StateFlow
 import java.net.URI
 import java.text.DateFormat
 import java.util.Date
@@ -16,13 +17,13 @@ object Call {
         val beginning: Date = Date(0),
         val duration: Long = 0,
         val number: String = "",
-        val name: String = "",
+        val name: String? = null,
         val timesQueried: Int = 0,
     )
 
     interface Repository {
-        fun getStatus(): Ongoing
-        fun getLog(): List<Previous>
+        val status: StateFlow<Ongoing?>
+        val log: StateFlow<List<Previous>>
     }
 
     interface Api : Repository {

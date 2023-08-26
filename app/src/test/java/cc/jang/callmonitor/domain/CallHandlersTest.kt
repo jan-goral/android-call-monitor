@@ -44,13 +44,13 @@ class CallHandlersTest {
                 Call.Api.Service(name, URI("ip:${config.port}/$name"))
             }
         )
-        every { ipRepo.getLocalIp() } returns "ip"
+        every { ipRepo.ip.value } returns "ip"
 
         // when
         val actual = callHandler.getMetadata()
 
         // then
-        verify(exactly = 1) { ipRepo.getLocalIp() }
+        verify(exactly = 1) { ipRepo.ip.value }
         assertEquals(expected, actual)
     }
 }

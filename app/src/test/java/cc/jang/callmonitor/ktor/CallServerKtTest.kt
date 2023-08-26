@@ -59,13 +59,13 @@ class CallServerKtTest {
     fun testStatus() = testApplication {
         // given
         application { callModule(api) }
-        every { api.getStatus() } returns Call.Ongoing()
+        every { api.status.value } returns Call.Ongoing()
 
         // when
         val response = client.get("status")
 
         // then
-        verify(exactly = 1) { api.getStatus() }
+        verify(exactly = 1) { api.status.value }
         assertEquals(HttpStatusCode.OK, response.status)
         assertEquals(
             """{"outgoing":true,"ongoing":true,"number":"","name":""}""",
@@ -74,16 +74,34 @@ class CallServerKtTest {
     }
 
     @Test
+    fun testStatusEmpty() = testApplication {
+        // given
+        application { callModule(api) }
+        every { api.status.value } returns null
+
+        // when
+        val response = client.get("status")
+
+        // then
+        verify(exactly = 1) { api.status.value }
+        assertEquals(HttpStatusCode.OK, response.status)
+        assertEquals(
+            """{}""",
+            response.bodyAsText(),
+        )
+    }
+
+    @Test
     fun testLog() = testApplication {
         // given
         application { callModule(api) }
-        every { api.getLog() } returns listOf(Call.Previous())
+        every { api.log.value } returns listOf(Call.Previous())
 
         // when
         val response = client.get("/log")
 
         // then
-        verify(exactly = 1) { api.getLog() }
+        verify(exactly = 1) { api.log.value }
         assertEquals(HttpStatusCode.OK, response.status)
         assertEquals(
             """[{"beginning":"01.01.1970, 00:00","duration":0,"number":"","name":"","timesQueried":0}]""",

@@ -26,5 +26,5 @@ class CallHandler(
         )
     }
 
-    private fun getAddress() = ipRepo.getLocalIp() + ":" + config.port
+    private fun getAddress() = ipRepo.ip.value + ":" + config.port
 }

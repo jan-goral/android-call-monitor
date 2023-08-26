@@ -31,10 +31,10 @@ fun Application.callModule(
             call.respond(api.getMetadata())
         }
         get("/status") {
-            call.respond(api.getStatus())
+            call.respond(api.status.value ?: Unit)
         }
         get("/log") {
-            call.respond(api.getLog())
+            call.respond(api.log.value)
         }
     }
 }
