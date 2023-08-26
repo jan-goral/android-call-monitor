@@ -66,4 +66,21 @@ dependencies {
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
+
+    // Kotlin
+    testImplementation(kotlin("test"))
+
+    // Mockk
+    val mockkVersion = "1.13.7"
+    testImplementation("io.mockk:mockk-android:${mockkVersion}")
+    testImplementation("io.mockk:mockk-agent:${mockkVersion}")
+
+    // Ktor
+    val ktorVersion = "2.3.3"
+    implementation("io.ktor:ktor-server-core:$ktorVersion")
+    implementation("io.ktor:ktor-server-netty:$ktorVersion")
+    implementation("io.ktor:ktor-server-content-negotiation:$ktorVersion")
+    implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
+    testImplementation("io.ktor:ktor-server-tests:$ktorVersion")
+    implementation("ch.qos.logback:logback-classic:1.4.11")
 }
