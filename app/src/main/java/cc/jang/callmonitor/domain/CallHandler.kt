@@ -4,8 +4,11 @@ import cc.jang.callmonitor.Call
 import cc.jang.callmonitor.Ip
 import java.net.URI
 import java.util.Date
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class CallHandler(
+@Singleton
+class CallHandler @Inject constructor(
     override val config: Call.Api.Config,
     private val start: Date = Date(),
     private val callRepo: Call.Repository,

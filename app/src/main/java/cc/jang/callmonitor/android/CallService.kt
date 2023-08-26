@@ -5,33 +5,20 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import cc.jang.callmonitor.Call
-import cc.jang.callmonitor.domain.CallHandler
 import cc.jang.callmonitor.ktor.callServer
-import cc.jang.callmonitor.mock.CallRepository
-import cc.jang.callmonitor.mock.IpRepository
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import java.text.DateFormat
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
-class CallService : Service(), CoroutineScope {
+@AndroidEntryPoint
+class CallService : Service() {
 
-    override val coroutineContext = SupervisorJob() + Dispatchers.IO
+    @Inject
+    lateinit var callApi: Call.Api
 
-    private val server by lazy {
-        callServer(
-            CallHandler(
-                config = Call.Api.Config(
-                    port = 12345,
-                    dateFormat = DateFormat.getDateTimeInstance(),
-                ),
-                callRepo = CallRepository(),
-                ipRepo = IpRepository(),
-            )
-        )
-    }
+    private val server by lazy { callServer(callApi) }
 
     override fun onCreate() {
+        super.onCreate()
         server.start()
     }
 
@@ -43,7 +30,9 @@ class CallService : Service(), CoroutineScope {
     override fun onBind(intent: Intent) = null
 
     override fun onDestroy() {
-        server.stop(3000, 3000)
+        Thread {
+            server.stop(3000, 3000)
+        }.start()
     }
 }
 

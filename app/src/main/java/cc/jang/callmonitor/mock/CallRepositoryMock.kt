@@ -2,8 +2,11 @@ package cc.jang.callmonitor.mock
 
 import cc.jang.callmonitor.Call
 import kotlinx.coroutines.flow.MutableStateFlow
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class CallRepository : Call.Repository {
+@Singleton
+class CallRepositoryMock @Inject constructor() : Call.Repository {
     override val status = MutableStateFlow(Call.Ongoing())
     override val log = MutableStateFlow(listOf(Call.Previous()))
 }
