@@ -85,6 +85,15 @@ dependencies {
     implementation("io.ktor:ktor-server-netty:$ktorVersion")
     implementation("io.ktor:ktor-server-content-negotiation:$ktorVersion")
     implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
+//    implementation("io.ktor:ktor-serialization-gson:$ktorVersion")
     testImplementation("io.ktor:ktor-server-tests:$ktorVersion")
-    implementation("ch.qos.logback:logback-classic:1.4.11")
+    implementation("org.slf4j:slf4j-android:1.7.36")
+
+    // Jackson
+    val jacksonVersion = "2.13.3" // highest version compatible with SDK 23
+    val jacksonStrictly = Action<ExternalModuleDependency> { version { strictly(jacksonVersion) } }
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin", jacksonStrictly)
+    implementation("com.fasterxml.jackson.core:jackson-annotations", jacksonStrictly)
+    implementation("com.fasterxml.jackson.core:jackson-databind", jacksonStrictly)
+    implementation("com.fasterxml.jackson.core:jackson-core", jacksonStrictly)
 }
