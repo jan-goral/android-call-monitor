@@ -2,6 +2,7 @@ package cc.jang.callmonitor.android
 
 import android.Manifest.permission.POST_NOTIFICATIONS
 import android.Manifest.permission.READ_CALL_LOG
+import android.Manifest.permission.READ_PHONE_STATE
 import android.os.Build.VERSION.SDK_INT
 import android.os.Build.VERSION_CODES.TIRAMISU
 import android.os.Bundle
@@ -43,6 +44,7 @@ class MainActivity : ComponentActivity() {
             buildList {
                 if (SDK_INT >= TIRAMISU) add(POST_NOTIFICATIONS)
                 add(READ_CALL_LOG)
+                add(READ_PHONE_STATE)
             }.toTypedArray()
         )
         try {

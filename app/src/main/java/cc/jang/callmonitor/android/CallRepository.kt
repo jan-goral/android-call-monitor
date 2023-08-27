@@ -36,7 +36,7 @@ class CallRepository @Inject constructor(
 
     override val coroutineContext = SupervisorJob()
 
-    override val status: StateFlow<Call.Ongoing?> get() = TODO("Not yet implemented")
+    override val status = MutableStateFlow<Call.Ongoing?>(null)
 
     override val log = MutableStateFlow(emptyList<Call.Previous>())
 
