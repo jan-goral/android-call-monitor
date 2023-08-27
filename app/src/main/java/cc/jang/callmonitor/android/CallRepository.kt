@@ -9,6 +9,7 @@ import android.provider.CallLog.Calls.CONTENT_URI
 import cc.jang.callmonitor.Call
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
@@ -22,6 +23,7 @@ import javax.inject.Singleton
 class CallRepository @Inject constructor(
     @ApplicationContext private val context: Context,
     private val permissionsRepo: PermissionsRepository,
+    private val timestampDB: TimestampRoom.DB,
 ) : Call.Repository,
     CoroutineScope {
 
@@ -29,15 +31,26 @@ class CallRepository @Inject constructor(
 
     private val handler by lazy { Handler(context.mainLooper) }
 
-    override val coroutineContext = SupervisorJob()
+    val statusState = MutableStateFlow<Call.Ongoing?>(null)
 
-    override val status = MutableStateFlow<Call.Ongoing?>(null)
+    override val coroutineContext = SupervisorJob() + Dispatchers.IO
+
+    override val status: Call.Ongoing?
+        get() = statusState.value?.apply {
+            if (ongoing) launch {
+                val timestamp = TimestampRoom.Timestamp(
+                    timestamp = System.currentTimeMillis(),
+                    number = number,
+                )
+                timestampDB.timestampDao.insert(timestamp)
+            }
+        }
 
     override val log = MutableStateFlow(emptyList<Call.Previous>())
 
     private val contentObserver = object : ContentObserver(handler) {
         override fun onChange(selfChange: Boolean) {
-            log.update { getLog() }
+            launch { log.update { getLog() } }
         }
     }
 
@@ -51,7 +64,7 @@ class CallRepository @Inject constructor(
         }
     }
 
-    private fun getLog(): List<Call.Previous> = buildList {
+    private suspend fun getLog(): List<Call.Previous> = buildList {
         val projection = arrayOf(
             CallLog.Calls.CACHED_NAME,
             CallLog.Calls.NUMBER,
@@ -65,6 +78,7 @@ class CallRepository @Inject constructor(
             null, null,
             sortOrder
         )?.use { cursor ->
+            val dao = timestampDB.timestampDao
             val nameIndex: Int = cursor.getColumnIndex(CallLog.Calls.CACHED_NAME)
             val numberIndex: Int = cursor.getColumnIndex(CallLog.Calls.NUMBER)
             val dateIndex: Int = cursor.getColumnIndex(CallLog.Calls.DATE)
@@ -75,12 +89,13 @@ class CallRepository @Inject constructor(
                 val dateMillis: Long = cursor.getLong(dateIndex)
                 val duration: Long = cursor.getLong(durationIndex)
                 val name = cachedName?.takeIf { it.isNotBlank() } ?: context.getContactName(number)
+                val timesQueried = dao.getCount(number, dateMillis, dateMillis + duration * 1000)
                 val entry = Call.Previous(
                     name = name,
                     number = number,
                     beginning = Date(dateMillis),
                     duration = duration,
-                    timesQueried = 1,
+                    timesQueried = timesQueried,
                 )
                 add(entry)
             }

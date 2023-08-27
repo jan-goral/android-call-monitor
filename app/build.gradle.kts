@@ -75,6 +75,7 @@ dependencies {
 
     // Kotlin
     testImplementation(kotlin("test"))
+    androidTestImplementation(kotlin("test"))
 
     // Mockk
     val mockkVersion = "1.13.7"
@@ -103,4 +104,9 @@ dependencies {
     implementation("com.google.dagger:hilt-android:2.46.1")
     implementation("androidx.hilt:hilt-navigation-compose:1.0.0")
     kapt("com.google.dagger:hilt-android-compiler:2.44.2")
+
+    //Room
+    implementation("androidx.room:room-runtime:2.5.2")
+    implementation("androidx.room:room-ktx:2.5.2")
+    kapt("androidx.room:room-compiler:2.5.2")
 }

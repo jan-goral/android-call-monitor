@@ -31,7 +31,7 @@ fun Application.callModule(
             call.respond(api.getMetadata())
         }
         get("/status") {
-            call.respond(api.status.value ?: Unit)
+            call.respond(api.status ?: Unit)
         }
         get("/log") {
             call.respond(api.log.value)

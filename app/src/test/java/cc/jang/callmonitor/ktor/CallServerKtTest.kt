@@ -59,13 +59,13 @@ class CallServerKtTest {
     fun testStatus() = testApplication {
         // given
         application { callModule(api) }
-        every { api.status.value } returns Call.Ongoing()
+        every { api.status } returns Call.Ongoing()
 
         // when
         val response = client.get("status")
 
         // then
-        verify(exactly = 1) { api.status.value }
+        verify(exactly = 1) { api.status }
         assertEquals(HttpStatusCode.OK, response.status)
         assertEquals(
             """{"outgoing":true,"ongoing":true,"number":"","name":""}""",
@@ -77,13 +77,13 @@ class CallServerKtTest {
     fun testStatusEmpty() = testApplication {
         // given
         application { callModule(api) }
-        every { api.status.value } returns null
+        every { api.status } returns null
 
         // when
         val response = client.get("status")
 
         // then
-        verify(exactly = 1) { api.status.value }
+        verify(exactly = 1) { api.status }
         assertEquals(HttpStatusCode.OK, response.status)
         assertEquals(
             """{}""",

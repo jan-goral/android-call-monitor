@@ -7,6 +7,6 @@ import javax.inject.Singleton
 
 @Singleton
 class CallRepositoryMock @Inject constructor() : Call.Repository {
-    override val status = MutableStateFlow(Call.Ongoing())
+    override val status = Call.Ongoing()
     override val log = MutableStateFlow(listOf(Call.Previous(name = "test")))
 }

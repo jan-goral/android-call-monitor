@@ -23,7 +23,7 @@ object Call {
     )
 
     interface Repository {
-        val status: StateFlow<Ongoing?>
+        val status: Ongoing?
         val log: StateFlow<List<Previous>>
     }
 
