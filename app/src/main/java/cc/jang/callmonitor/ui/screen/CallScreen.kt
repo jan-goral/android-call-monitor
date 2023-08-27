@@ -88,7 +88,7 @@ fun CallScreen(
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                     ) {
                         Text(
-                            text = item.name ?: item.number,
+                            text = item.name ?: item.number.parsePhoneNumber(),
                             style = MaterialTheme.typography.titleLarge,
                         )
                         Text(
