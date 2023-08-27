@@ -34,7 +34,7 @@ fun CallScreen(
 
     CallScreen(
         status = status,
-        address = address,
+        address = address.toString(),
         log = items
     )
 }
@@ -72,7 +72,7 @@ fun CallScreen(
     Column(modifier = Modifier.padding(it)) {
         Text(
             text = address,
-            style = MaterialTheme.typography.headlineLarge,
+            style = MaterialTheme.typography.headlineMedium,
             modifier = Modifier.padding(16.dp)
         )
         LazyColumn {

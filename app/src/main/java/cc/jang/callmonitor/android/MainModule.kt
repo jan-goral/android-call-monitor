@@ -3,7 +3,6 @@ package cc.jang.callmonitor.android
 import cc.jang.callmonitor.Call
 import cc.jang.callmonitor.Ip
 import cc.jang.callmonitor.domain.CallHandler
-import cc.jang.callmonitor.mock.IpRepositoryMock
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -40,6 +39,6 @@ interface MainBindings {
     fun callRepo(repository: CallRepository): Call.Repository
 
     @Binds
-    fun ipRepo(repository: IpRepositoryMock): Ip.Repository
+    fun ipRepo(repository: IpRepository): Ip.Repository
 }
 

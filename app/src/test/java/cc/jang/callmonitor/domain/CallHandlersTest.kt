@@ -5,7 +5,6 @@ import cc.jang.callmonitor.Ip
 import io.mockk.MockKAnnotations
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
-import io.mockk.verify
 import org.junit.Test
 import java.net.URI
 import java.text.SimpleDateFormat
@@ -27,6 +26,7 @@ class CallHandlersTest {
     @BeforeTest
     fun setUp() {
         MockKAnnotations.init(this)
+        every { ipRepo.ip.value } returns "ip"
         callHandler = CallHandler(
             start = start,
             config = config,
@@ -41,16 +41,14 @@ class CallHandlersTest {
         val expected = Call.Api.Metadata(
             start = start,
             services = listOf("status", "log").map { name ->
-                Call.Api.Service(name, URI("ip:${config.port}/$name"))
+                Call.Api.Service(name, URI("http://ip:${config.port}/$name"))
             }
         )
-        every { ipRepo.ip.value } returns "ip"
 
         // when
         val actual = callHandler.getMetadata()
 
         // then
-        verify(exactly = 1) { ipRepo.ip.value }
         assertEquals(expected, actual)
     }
 }

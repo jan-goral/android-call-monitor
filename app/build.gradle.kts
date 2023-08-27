@@ -89,7 +89,7 @@ dependencies {
     implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
 //    implementation("io.ktor:ktor-serialization-gson:$ktorVersion")
     testImplementation("io.ktor:ktor-server-tests:$ktorVersion")
-//    implementation("org.slf4j:slf4j-android:1.7.36")
+    implementation("org.slf4j:slf4j-android:1.7.36")
 
     // Jackson
     val jacksonVersion = "2.13.3" // highest version compatible with SDK 23
@@ -100,7 +100,7 @@ dependencies {
     implementation("com.fasterxml.jackson.core:jackson-core", jacksonStrictly)
 
     //Hilt
-    implementation("com.google.dagger:hilt-android:2.44.2")
+    implementation("com.google.dagger:hilt-android:2.46.1")
     implementation("androidx.hilt:hilt-navigation-compose:1.0.0")
     kapt("com.google.dagger:hilt-android-compiler:2.44.2")
 }

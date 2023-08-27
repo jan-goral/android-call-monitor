@@ -4,6 +4,6 @@ import kotlinx.coroutines.flow.StateFlow
 
 object Ip {
     interface Repository {
-        val ip: StateFlow<String?>
+        val ip: StateFlow<String>
     }
 }

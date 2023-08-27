@@ -31,6 +31,7 @@ object Call {
 
         val config: Config
         val state: StateFlow<Status>
+        val address: StateFlow<URI>
 
         data class Config(
             val port: Int,

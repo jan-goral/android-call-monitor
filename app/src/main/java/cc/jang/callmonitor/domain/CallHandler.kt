@@ -6,6 +6,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -19,36 +20,39 @@ class CallHandler @Inject constructor(
     start: Date = Date(),
     override val config: Call.Api.Config,
     private val callRepo: Call.Repository,
-    private val ipRepo: Ip.Repository,
+    ipRepo: Ip.Repository,
 ) : Call.Api,
     Call.Repository by callRepo,
     CoroutineScope {
 
     override val coroutineContext = SupervisorJob()
 
-    private val scope = CoroutineScope(SupervisorJob())
-
     override val state = State()
+
+    override val address: StateFlow<URI> = ipRepo.ip
+        .map { ip -> ip.uri }
+        .stateIn(this, SharingStarted.Eagerly, ipRepo.ip.value.uri)
+
 
     private val started = state
         .filter { it == Call.Api.Status.Started }
         .map { Date() }
-        .stateIn(scope, SharingStarted.Eagerly, start)
+        .stateIn(this, SharingStarted.Eagerly, start)
 
     override fun getMetadata(): Call.Api.Metadata {
-        val address = getAddress()
+        val address = address.value
         return Call.Api.Metadata(
             start = started.value,
             services = listOf("status", "log").map {
                 Call.Api.Service(
                     name = it,
-                    uri = URI.create("$address/$it")
+                    uri = address.resolve("/$it"),
                 )
             }
         )
     }
 
-    private fun getAddress() = ipRepo.ip.value + ":" + config.port
+    private val String.uri get() = URI.create("http://" + this + ":" + config.port)
 
     class State : Call.Api.State,
         MutableStateFlow<Call.Api.Status> by MutableStateFlow(Call.Api.Status.Stopped)
