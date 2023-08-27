@@ -8,6 +8,7 @@ import cc.jang.callmonitor.Call
 import cc.jang.callmonitor.ktor.callServer
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+import kotlinx.coroutines.flow.update
 
 @AndroidEntryPoint
 class CallService : Service() {
@@ -15,11 +16,16 @@ class CallService : Service() {
     @Inject
     lateinit var callApi: Call.Api
 
+    @Inject
+    lateinit var callApiState: Call.Api.State
+
     private val server by lazy { callServer(callApi) }
 
     override fun onCreate() {
         super.onCreate()
+        callApiState.update { Call.Api.Status.Syncing }
         server.start()
+        callApiState.update { Call.Api.Status.Started }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -31,7 +37,9 @@ class CallService : Service() {
 
     override fun onDestroy() {
         Thread {
-            server.stop(3000, 3000)
+            callApiState.update { Call.Api.Status.Syncing }
+            server.stop(1000, 1000)
+            callApiState.update { Call.Api.Status.Stopped }
         }.start()
     }
 }

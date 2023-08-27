@@ -89,7 +89,7 @@ dependencies {
     implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
 //    implementation("io.ktor:ktor-serialization-gson:$ktorVersion")
     testImplementation("io.ktor:ktor-server-tests:$ktorVersion")
-    implementation("org.slf4j:slf4j-android:1.7.36")
+//    implementation("org.slf4j:slf4j-android:1.7.36")
 
     // Jackson
     val jacksonVersion = "2.13.3" // highest version compatible with SDK 23

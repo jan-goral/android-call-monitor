@@ -1,5 +1,6 @@
 package cc.jang.callmonitor
 
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import java.net.URI
 import java.text.DateFormat
@@ -29,6 +30,7 @@ object Call {
     interface Api : Repository {
 
         val config: Config
+        val state: StateFlow<Status>
 
         data class Config(
             val port: Int,
@@ -46,5 +48,9 @@ object Call {
             val name: String = "",
             val uri: URI = URI(""),
         )
+
+        interface State: MutableStateFlow<Status>
+
+        enum class Status { Syncing, Started, Stopped }
     }
 }

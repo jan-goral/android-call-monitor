@@ -104,7 +104,7 @@ class CallServerKtTest {
         verify(exactly = 1) { api.log.value }
         assertEquals(HttpStatusCode.OK, response.status)
         assertEquals(
-            """[{"beginning":"01.01.1970, 00:00","duration":0,"number":"","name":"","timesQueried":0}]""",
+            """[{"beginning":"01.01.1970, 00:00","duration":0,"number":"","name":null,"timesQueried":0}]""",
             response.bodyAsText(),
         )
     }
