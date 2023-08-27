@@ -1,8 +1,6 @@
 package cc.jang.callmonitor.android
 
 import android.Manifest.permission.POST_NOTIFICATIONS
-import android.Manifest.permission.READ_CALL_LOG
-import android.Manifest.permission.READ_PHONE_STATE
 import android.os.Build.VERSION.SDK_INT
 import android.os.Build.VERSION_CODES.TIRAMISU
 import android.os.Bundle
@@ -12,16 +10,13 @@ import androidx.activity.result.contract.ActivityResultContracts.RequestMultiple
 import cc.jang.callmonitor.ui.screen.CallScreen
 import cc.jang.callmonitor.ui.theme.CallMonitorTheme
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.MutableSharedFlow
 import javax.inject.Inject
-import javax.inject.Named
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
     @Inject
-    @Named("permissionsBroadcast")
-    lateinit var permissionsBroadcast: MutableSharedFlow<String>
+    lateinit var permissionsRepo: PermissionsRepository
 
     private val askForPermissions = registerForActivityResult(
         RequestMultiplePermissions()
@@ -33,20 +28,12 @@ class MainActivity : ComponentActivity() {
                 e.printStackTrace()
             }
         }
-        if (result[READ_CALL_LOG] == true) {
-            permissionsBroadcast.tryEmit(READ_CALL_LOG)
-        }
+        permissionsRepo.update()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        askForPermissions.launch(
-            buildList {
-                if (SDK_INT >= TIRAMISU) add(POST_NOTIFICATIONS)
-                add(READ_CALL_LOG)
-                add(READ_PHONE_STATE)
-            }.toTypedArray()
-        )
+        askForPermissions.launch(permissionsRepo.missing.toTypedArray())
         try {
             startCallService()
         } catch (e: Throwable) {
@@ -59,3 +46,4 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
+

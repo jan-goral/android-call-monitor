@@ -9,11 +9,8 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import kotlinx.coroutines.flow.MutableSharedFlow
 import java.text.DateFormat
 import java.util.Date
-import javax.inject.Named
-import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -30,12 +27,6 @@ object MainModule {
 
     @Provides
     fun callApiState(callHandler: CallHandler): Call.Api.State = callHandler.state
-
-    @Provides
-    @Named("permissionsBroadcast")
-    @Singleton
-    fun permissionsBroadcast() = MutableSharedFlow<String>(replay = 10)
-
 }
 
 @Module
