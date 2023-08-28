@@ -1,4 +1,4 @@
-package cc.jang.callmonitor.ui.screen
+package cc.jang.callmonitor.compose.call
 
 import androidx.lifecycle.ViewModel
 import cc.jang.callmonitor.Call
@@ -7,11 +7,11 @@ import javax.inject.Inject
 
 @HiltViewModel
 class CallViewModel @Inject constructor(
-    callApi: Call.Api,
+    callService: Call.Service,
     val status: Call.Server.State,
 ) : ViewModel() {
 
-    val address = callApi.address
+    val address = callService.address
 
-    val calls = callApi.log
+    val calls = callService.log
 }

@@ -1,4 +1,4 @@
-package cc.jang.callmonitor.ui.screen
+package cc.jang.callmonitor.compose.call
 
 import android.telephony.PhoneNumberUtils
 import java.util.Locale

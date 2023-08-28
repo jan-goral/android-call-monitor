@@ -1,4 +1,4 @@
-package cc.jang.callmonitor.ui.theme
+package cc.jang.callmonitor.compose.theme
 
 import androidx.compose.ui.graphics.Color
 

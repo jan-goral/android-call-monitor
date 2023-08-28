@@ -1,4 +1,4 @@
-package cc.jang.callmonitor.android
+package cc.jang.callmonitor.room
 
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider

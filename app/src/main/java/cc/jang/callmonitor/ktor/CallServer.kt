@@ -13,28 +13,28 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
 
 fun callServer(
-    api: Call.Api,
-) = embeddedServer(Netty, api.config.port) {
-    callModule(api)
+    service: Call.Service,
+) = embeddedServer(Netty, service.config.port) {
+    callModule(service)
 }
 
 fun Application.callModule(
-    api: Call.Api,
+    service: Call.Service,
 ) {
     install(ContentNegotiation) {
         jackson {
-            dateFormat = api.config.dateFormat
+            dateFormat = service.config.dateFormat
         }
     }
     routing {
         get("/") {
-            call.respond(api.getMetadata())
+            call.respond(service.metadata)
         }
         get("/status") {
-            call.respond(api.status ?: Unit)
+            call.respond(service.status ?: Unit)
         }
         get("/log") {
-            call.respond(api.log.value)
+            call.respond(service.log.value)
         }
     }
 }

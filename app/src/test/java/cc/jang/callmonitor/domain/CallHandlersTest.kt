@@ -16,8 +16,8 @@ class CallHandlersTest {
 
     private val start = Date(0)
     private val port = 0
-    private val config = Call.Api.Config(port, SimpleDateFormat.getInstance())
-    private lateinit var callHandler: CallHandler
+    private val config = Call.Service.Config(port, SimpleDateFormat.getInstance())
+    private lateinit var callApiService: CallService
     @MockK
     private lateinit var callRepo: Call.Repository
     @MockK
@@ -33,7 +33,7 @@ class CallHandlersTest {
         every { ipRepo.ip.value } returns "ip"
         every { startedStatus.date } returns start
         every { callServerState.value } returns startedStatus
-        callHandler = CallHandler(
+        callApiService = CallService(
             config = config,
             state = callServerState,
             callRepo = callRepo,
@@ -44,15 +44,15 @@ class CallHandlersTest {
     @Test
     fun getMetadata() {
         // given
-        val expected = Call.Api.Metadata(
+        val expected = Call.Service.Metadata(
             start = start,
             services = listOf("status", "log").map { name ->
-                Call.Api.Service(name, URI("http://ip:${config.port}/$name"))
+                Call.Service.Endpoint(name, URI("http://ip:${config.port}/$name"))
             }
         )
 
         // when
-        val actual = callHandler.getMetadata()
+        val actual = callApiService.metadata
 
         // then
         assertEquals(expected, actual)

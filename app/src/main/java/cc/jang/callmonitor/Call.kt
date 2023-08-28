@@ -6,14 +6,15 @@ import java.text.DateFormat
 import java.util.Date
 
 object Call {
-    data class Ongoing(
+
+    data class Status(
         val outgoing: Boolean = true,
         val ongoing: Boolean = true,
         val number: String = "",
-        val name: String = "",
+        val name: String? = null,
     )
 
-    data class Previous(
+    data class Log(
         val beginning: Date = Date(0),
         val duration: Long = 0,
         val number: String = "",
@@ -22,28 +23,27 @@ object Call {
     )
 
     interface Repository {
-        val status: Ongoing?
-        val log: StateFlow<List<Previous>>
+        val status: Status?
+        val log: StateFlow<List<Log>>
     }
 
-    interface Api : Repository {
+    interface Service : Repository {
 
         val config: Config
         val address: StateFlow<URI>
+        val metadata: Metadata
 
         data class Config(
             val port: Int,
             val dateFormat: DateFormat,
         )
 
-        fun getMetadata(): Metadata
-
         data class Metadata(
             val start: Date? = null,
-            val services: List<Service> = emptyList(),
+            val services: List<Endpoint> = emptyList(),
         )
 
-        data class Service(
+        data class Endpoint(
             val name: String = "",
             val uri: URI = URI(""),
         )

@@ -16,7 +16,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class PermissionsRepository(
+class PermissionsStore(
     private val context: Context,
     private val state: MutableStateFlow<Map<String, Boolean>>,
 ) : StateFlow<Map<String, Boolean>> by state {

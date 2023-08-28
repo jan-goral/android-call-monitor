@@ -18,12 +18,12 @@ import kotlin.test.assertEquals
 
 class CallServerKtTest {
 
-    private lateinit var api: Call.Api
+    private lateinit var service: Call.Service
 
     @BeforeTest
     fun setUp() {
-        api = mockk {
-            every { config } returns Call.Api.Config(
+        service = mockk {
+            every { config } returns Call.Service.Config(
                 port = 0,
                 dateFormat = SimpleDateFormat().apply {
                     timeZone = TimeZone.getTimeZone("UTC")
@@ -35,11 +35,11 @@ class CallServerKtTest {
     @Test
     fun testRoot() = testApplication {
         // given
-        application { callModule(api) }
-        every { api.getMetadata() } returns Call.Api.Metadata(
+        application { callModule(service) }
+        every { service.metadata } returns Call.Service.Metadata(
             start = Date(0),
             services = listOf(
-                Call.Api.Service(uri = URI("https://0.0.0.0:8080/test"),)
+                Call.Service.Endpoint(uri = URI("https://0.0.0.0:8080/test"),)
             )
         )
 
@@ -47,7 +47,7 @@ class CallServerKtTest {
         val response = client.get("/")
 
         // then
-        verify(exactly = 1) { api.getMetadata() }
+        verify(exactly = 1) { service.metadata }
         assertEquals(HttpStatusCode.OK, response.status)
         assertEquals(
             """{"start":"01.01.1970, 00:00","services":[{"name":"","uri":"https://0.0.0.0:8080/test"}]}""",
@@ -58,14 +58,14 @@ class CallServerKtTest {
     @Test
     fun testStatus() = testApplication {
         // given
-        application { callModule(api) }
-        every { api.status } returns Call.Ongoing()
+        application { callModule(service) }
+        every { service.status } returns Call.Status()
 
         // when
         val response = client.get("status")
 
         // then
-        verify(exactly = 1) { api.status }
+        verify(exactly = 1) { service.status }
         assertEquals(HttpStatusCode.OK, response.status)
         assertEquals(
             """{"outgoing":true,"ongoing":true,"number":"","name":""}""",
@@ -76,14 +76,14 @@ class CallServerKtTest {
     @Test
     fun testStatusEmpty() = testApplication {
         // given
-        application { callModule(api) }
-        every { api.status } returns null
+        application { callModule(service) }
+        every { service.status } returns null
 
         // when
         val response = client.get("status")
 
         // then
-        verify(exactly = 1) { api.status }
+        verify(exactly = 1) { service.status }
         assertEquals(HttpStatusCode.OK, response.status)
         assertEquals(
             """{}""",
@@ -94,14 +94,14 @@ class CallServerKtTest {
     @Test
     fun testLog() = testApplication {
         // given
-        application { callModule(api) }
-        every { api.log.value } returns listOf(Call.Previous())
+        application { callModule(service) }
+        every { service.log.value } returns listOf(Call.Log())
 
         // when
         val response = client.get("/log")
 
         // then
-        verify(exactly = 1) { api.log.value }
+        verify(exactly = 1) { service.log.value }
         assertEquals(HttpStatusCode.OK, response.status)
         assertEquals(
             """[{"beginning":"01.01.1970, 00:00","duration":0,"number":"","name":null,"timesQueried":0}]""",

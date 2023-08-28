@@ -1,4 +1,4 @@
-package cc.jang.callmonitor.android
+package cc.jang.callmonitor.room
 
 import android.content.Context
 import androidx.room.Dao

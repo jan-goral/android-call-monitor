@@ -34,8 +34,7 @@
         </receiver>
 
         <service
-            android:name=".android.CallService"
-            android:exported="true" />
+            android:name=".android.ForegroundService" />
 
         <activity
             android:name=".android.MainActivity"

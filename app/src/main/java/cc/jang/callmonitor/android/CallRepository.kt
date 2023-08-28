@@ -1,117 +1,81 @@
 package cc.jang.callmonitor.android
 
 import android.Manifest.permission.READ_CALL_LOG
-import android.content.Context
-import android.database.ContentObserver
-import android.os.Handler
-import android.provider.CallLog
-import android.provider.CallLog.Calls.CONTENT_URI
 import cc.jang.callmonitor.Call
-import dagger.hilt.android.qualifiers.ApplicationContext
+import cc.jang.callmonitor.room.TimestampRoom
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flattenMerge
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.util.Date
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class CallRepository @Inject constructor(
-    @ApplicationContext private val context: Context,
     private val serverState: Call.Server.State,
-    private val permissionsRepo: PermissionsRepository,
-    private val timestampDB: TimestampRoom.DB,
+    private val permissionsStore: PermissionsStore,
+    private val callLogResolver: CallLogResolver,
+    private val callLogObserver: CallLogObserver,
+    private val timestampDao: TimestampRoom.TimestampDao,
+    private val contactNameResolver: ContactNameResolver,
 ) : Call.Repository,
-    CoroutineScope {
+    CoroutineScope by CoroutineScope(SupervisorJob() + Dispatchers.IO) {
 
-    private val contentResolver get() = context.contentResolver
+    val statusState = MutableStateFlow<Call.Status?>(null)
 
-    private val handler by lazy { Handler(context.mainLooper) }
-
-    val statusState = MutableStateFlow<Call.Ongoing?>(null)
-
-    override val coroutineContext = SupervisorJob() + Dispatchers.IO
-
-    override val status: Call.Ongoing?
+    override val status: Call.Status?
         get() = statusState.value?.apply {
-            if (ongoing) launch {
-                val timestamp = TimestampRoom.Timestamp(
-                    timestamp = System.currentTimeMillis(),
-                    number = number,
-                )
-                timestampDB.timestampDao.insert(timestamp)
-            }
+            if (ongoing)
+                insertTimestamp()
         }
 
-    override val log = MutableStateFlow(emptyList<Call.Previous>())
-
-    private val contentObserver = object : ContentObserver(handler) {
-        override fun onChange(selfChange: Boolean) {
-            launch { log.update { getLog() } }
-        }
-    }
+    override val log = MutableStateFlow(emptyList<Call.Log>())
 
     init {
         launch {
-            permissionsRepo.first { it[READ_CALL_LOG] == true }
-            contentResolver.registerContentObserver(CONTENT_URI, true, contentObserver)
-            permissionsRepo.collect {
-                contentObserver.onChange(true)
-            }
-        }
-        launch {
-            serverState.collect {
-                contentObserver.onChange(true)
+            permissionsStore.first { it[READ_CALL_LOG] == true }
+            flowOf(
+                permissionsStore,
+                serverState,
+                callLogObserver.flow(),
+            ).flattenMerge().collect {
+                log.update { getLog() }
             }
         }
     }
 
-    private suspend fun getLog(): List<Call.Previous> {
-        val status = serverState.value
-        if (status !is Call.Server.Status.Started) return emptyList()
-
-        val list = mutableListOf<Call.Previous>()
-        val projection = arrayOf(
-            CallLog.Calls.CACHED_NAME,
-            CallLog.Calls.NUMBER,
-            CallLog.Calls.DATE,
-            CallLog.Calls.DURATION,
-            CallLog.Calls.TYPE
+    private fun Call.Status.insertTimestamp() = launch {
+        val timestamp = TimestampRoom.Timestamp(
+            timestamp = System.currentTimeMillis(),
+            number = number,
         )
-        val selection = "${CallLog.Calls.DATE} > ?"
-        val selectionArgs = arrayOf("${status.date.time}")
-        val sortOrder = CallLog.Calls.DATE + " DESC"
-        context.contentResolver.query(
-            CONTENT_URI, projection,
-            selection, selectionArgs,
-            sortOrder
-        )?.use { cursor ->
-            val dao = timestampDB.timestampDao
-            val nameIndex: Int = cursor.getColumnIndex(CallLog.Calls.CACHED_NAME)
-            val numberIndex: Int = cursor.getColumnIndex(CallLog.Calls.NUMBER)
-            val dateIndex: Int = cursor.getColumnIndex(CallLog.Calls.DATE)
-            val durationIndex: Int = cursor.getColumnIndex(CallLog.Calls.DURATION)
-            while (cursor.moveToNext()) {
-                val cachedName: String? = cursor.getString(nameIndex)
-                val number: String = cursor.getString(numberIndex)
-                val dateMillis: Long = cursor.getLong(dateIndex)
-                val duration: Long = cursor.getLong(durationIndex)
-                val name = cachedName?.takeIf { it.isNotBlank() } ?: context.getContactName(number)
-                val timesQueried = dao.getCount(number, dateMillis, dateMillis + duration * 1000)
-                val entry = Call.Previous(
-                    name = name,
-                    number = number,
-                    beginning = Date(dateMillis),
-                    duration = duration,
-                    timesQueried = timesQueried,
-                )
-                list.add(entry)
+        timestampDao.insert(timestamp)
+    }
+
+    private suspend fun getLog(): List<Call.Log> =
+        when (val status = serverState.value) {
+            !is Call.Server.Status.Started -> emptyList()
+            else -> callLogResolver.resolve(status.date).map { log ->
+                log.update()
             }
         }
-        return list
+
+    private suspend fun Call.Log.update(): Call.Log {
+        val name = name?.takeIf { it.isNotBlank() }
+            ?: contactNameResolver.resolve(number)
+        val timesQueried = timestampDao.getCount(
+            number = number,
+            startTime = beginning.time,
+            endTime = beginning.time + duration * 1000
+        )
+        return copy(
+            name = name,
+            timesQueried = timesQueried
+        )
     }
 }

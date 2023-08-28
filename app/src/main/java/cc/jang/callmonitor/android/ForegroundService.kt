@@ -13,15 +13,15 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @AndroidEntryPoint
-class CallService : Service() {
+class ForegroundService : Service() {
 
     @Inject
-    lateinit var callApi: Call.Api
+    lateinit var callService: Call.Service
 
     @Inject
     lateinit var state: State
 
-    private val server by lazy { callServer(callApi) }
+    private val server by lazy { callServer(callService) }
 
     override fun onCreate() {
         super.onCreate()
@@ -51,8 +51,8 @@ class CallService : Service() {
         MutableStateFlow<Call.Server.Status> by MutableStateFlow(Call.Server.Status.Stopped())
 }
 
-fun Context.startCallService() {
-    val intent = Intent(this, CallService::class.java)
+fun Context.startForegroundService() {
+    val intent = Intent(this, ForegroundService::class.java)
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
         startForegroundService(intent)
     } else {
@@ -60,7 +60,7 @@ fun Context.startCallService() {
     }
 }
 
-fun Context.stopCallService() {
-    val intent = Intent(this, CallService::class.java)
+fun Context.stopForegroundService() {
+    val intent = Intent(this, ForegroundService::class.java)
     stopService(intent)
 }

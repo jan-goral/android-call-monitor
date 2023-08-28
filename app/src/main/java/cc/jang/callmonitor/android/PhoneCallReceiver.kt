@@ -19,6 +19,9 @@ class PhoneCallReceiver : HiltBroadcastReceiver() {
     @Inject
     lateinit var callRepo: CallRepository
 
+    @Inject
+    lateinit var contactNameResolver: ContactNameResolver
+
     override fun onReceive(context: Context, intent: Intent) {
         logD(Tag, intent)
 
@@ -30,19 +33,19 @@ class PhoneCallReceiver : HiltBroadcastReceiver() {
         super.onReceive(context, intent) // inject dependencies via Hilt
 
         callRepo.statusState.update { previous ->
-            when  {
+            when {
 
                 state == TelephonyManager.EXTRA_STATE_IDLE -> null
 
                 // The case when a second call appears when the first one is ongoing.
                 // The problem is that second call isn't broadcasts EXTRA_STATE_IDLE.
-                // Using this method is not possible to detect the second call finish,
-                // So currently second call state is not supported.
+                // Observing on android.intent.action.PHONE_STATE doesn't allow to detect the second call finish.
+                // Currently second call state is not supported.
                 previous != null && previous.number != number -> previous
 
                 state == TelephonyManager.EXTRA_STATE_RINGING -> when (previous) {
-                    null -> Call.Ongoing(
-                        name = "",
+                    null -> Call.Status(
+                        name = contactNameResolver.resolve(number),
                         number = number,
                         ongoing = false,
                         outgoing = false
@@ -52,8 +55,8 @@ class PhoneCallReceiver : HiltBroadcastReceiver() {
                 }
 
                 state == TelephonyManager.EXTRA_STATE_OFFHOOK -> when (previous) {
-                    null -> Call.Ongoing(
-                        name = "",
+                    null -> Call.Status(
+                        name = contactNameResolver.resolve(number),
                         number = number,
                         ongoing = true,
                         outgoing = true

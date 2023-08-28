@@ -1,4 +1,4 @@
-package cc.jang.callmonitor.ui.screen
+package cc.jang.callmonitor.compose.call
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
@@ -23,8 +23,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import cc.jang.callmonitor.Call
 import cc.jang.callmonitor.R
-import cc.jang.callmonitor.android.startCallService
-import cc.jang.callmonitor.android.stopCallService
+import cc.jang.callmonitor.android.startForegroundService
+import cc.jang.callmonitor.android.stopForegroundService
 
 
 @Composable
@@ -34,8 +34,8 @@ fun CallServiceToggle(
     val context = LocalContext.current
     CallServiceToggle(status) {
         when (status) {
-            is Call.Server.Status.Stopped -> context.startCallService()
-            is Call.Server.Status.Started -> context.stopCallService()
+            is Call.Server.Status.Stopped -> context.startForegroundService()
+            is Call.Server.Status.Started -> context.stopForegroundService()
             is Call.Server.Status.Syncing -> Unit
         }
     }

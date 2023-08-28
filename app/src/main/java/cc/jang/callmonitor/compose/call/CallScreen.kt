@@ -1,4 +1,4 @@
-package cc.jang.callmonitor.ui.screen
+package cc.jang.callmonitor.compose.call
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -22,7 +22,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import cc.jang.callmonitor.Call
-import cc.jang.callmonitor.ui.theme.CallMonitorTheme
+import cc.jang.callmonitor.compose.theme.CallMonitorTheme
 
 @Composable
 fun CallScreen(
@@ -47,7 +47,7 @@ fun CallScreenPreview() = CallMonitorTheme {
         status = Call.Server.Status.Syncing(),
         address = "0.0.0.0:8080",
         log = (0..20).map {
-            Call.Previous(
+            Call.Log(
                 number = (it * 100000).toString(),
                 duration = (it * 10L),
             )
@@ -60,7 +60,7 @@ fun CallScreenPreview() = CallMonitorTheme {
 fun CallScreen(
     status: Call.Server.Status,
     address: String,
-    log: List<Call.Previous>,
+    log: List<Call.Log>,
 ) = Scaffold(
     topBar = {
         TopAppBar(

@@ -13,12 +13,12 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class CallHandler @Inject constructor(
-    override val config: Call.Api.Config,
+class CallService @Inject constructor(
+    override val config: Call.Service.Config,
     private val state: Call.Server.State,
     private val callRepo: Call.Repository,
     ipRepo: Ip.Repository,
-) : Call.Api,
+) : Call.Service,
     Call.Repository by callRepo,
     CoroutineScope {
 
@@ -28,19 +28,21 @@ class CallHandler @Inject constructor(
         .map { ip -> ip.uri }
         .stateIn(this, SharingStarted.Eagerly, ipRepo.ip.value.uri)
 
-    override fun getMetadata(): Call.Api.Metadata {
-        val address = address.value
-        val start = state.value.takeIf { it is Call.Server.Status.Started }?.date
-        return Call.Api.Metadata(
-            start = start,
-            services = listOf("status", "log").map {
-                Call.Api.Service(
-                    name = it,
-                    uri = address.resolve("/$it"),
+    override val metadata: Call.Service.Metadata
+        get() {
+            val start = state.value.takeIf { it is Call.Server.Status.Started }?.date
+            val address = address.value
+            val services = listOf("status", "log").map { name ->
+                Call.Service.Endpoint(
+                    name = name,
+                    uri = address.resolve("/$name"),
                 )
             }
-        )
-    }
+            return Call.Service.Metadata(
+                start = start,
+                services = services
+            )
+        }
 
     private val String.uri get() = URI.create("http://" + this + ":" + config.port)
 }
