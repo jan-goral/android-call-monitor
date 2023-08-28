@@ -29,14 +29,14 @@ import cc.jang.callmonitor.android.stopCallService
 
 @Composable
 fun CallServiceToggle(
-   status: Call.Api.Status
+   status: Call.Server.Status
 ) {
     val context = LocalContext.current
     CallServiceToggle(status) {
         when (status) {
-            Call.Api.Status.Stopped -> context.startCallService()
-            Call.Api.Status.Started -> context.stopCallService()
-            Call.Api.Status.Syncing -> Unit
+            is Call.Server.Status.Stopped -> context.startCallService()
+            is Call.Server.Status.Started -> context.stopCallService()
+            is Call.Server.Status.Syncing -> Unit
         }
     }
 }
@@ -44,21 +44,23 @@ fun CallServiceToggle(
 @Preview
 @Composable
 fun CallServiceTogglePreview() {
-    var status by remember { mutableStateOf(Call.Api.Status.Syncing) }
+    var status: Call.Server.Status by remember { mutableStateOf(Call.Server.Status.Syncing()) }
     CallServiceToggle(
         status = status,
         enabled = true,
     ) {
-        val values = Call.Api.Status.values()
-        val next = (status.ordinal + 1) % values.size
-        status = values[next]
+        status = when(status) {
+            is Call.Server.Status.Syncing -> Call.Server.Status.Started()
+            is Call.Server.Status.Started -> Call.Server.Status.Stopped()
+            is Call.Server.Status.Stopped -> Call.Server.Status.Syncing()
+        }
     }
 }
 
 @Composable
 fun CallServiceToggle(
-    status: Call.Api.Status,
-    enabled: Boolean = status != Call.Api.Status.Syncing,
+    status: Call.Server.Status,
+    enabled: Boolean = status !is Call.Server.Status.Syncing,
     onClick: () -> Unit,
 ) {
     IconButton(
@@ -66,14 +68,14 @@ fun CallServiceToggle(
         enabled = enabled,
     ) {
         val res = when (status) {
-            Call.Api.Status.Syncing -> R.drawable.sync_black_24dp
-            Call.Api.Status.Started -> R.drawable.link_black_24dp
-            Call.Api.Status.Stopped -> R.drawable.link_off_black_24dp
+            is Call.Server.Status.Syncing -> R.drawable.sync_black_24dp
+            is Call.Server.Status.Started -> R.drawable.link_black_24dp
+            is Call.Server.Status.Stopped -> R.drawable.link_off_black_24dp
         }
         var angle by remember(status) { mutableFloatStateOf(0f) }
         val rotation = remember(status) { Animatable(angle) }
         LaunchedEffect(status) {
-            if (status == Call.Api.Status.Syncing) {
+            if (status is Call.Server.Status.Syncing) {
                 rotation.animateTo(
                     targetValue = angle - 360f,
                     animationSpec = infiniteRepeatable(
@@ -87,7 +89,7 @@ fun CallServiceToggle(
         }
         Image(
             painter = painterResource(res),
-            contentDescription = status.name,
+            contentDescription = "",
             modifier = Modifier.rotate(rotation.value),
             colorFilter = ColorFilter.tint(LocalContentColor.current)
         )

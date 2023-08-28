@@ -44,7 +44,7 @@ fun CallScreen(
 @Composable
 fun CallScreenPreview() = CallMonitorTheme {
     CallScreen(
-        status = Call.Api.Status.Syncing,
+        status = Call.Server.Status.Syncing(),
         address = "0.0.0.0:8080",
         log = (0..20).map {
             Call.Previous(
@@ -58,7 +58,7 @@ fun CallScreenPreview() = CallMonitorTheme {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CallScreen(
-    status: Call.Api.Status,
+    status: Call.Server.Status,
     address: String,
     log: List<Call.Previous>,
 ) = Scaffold(

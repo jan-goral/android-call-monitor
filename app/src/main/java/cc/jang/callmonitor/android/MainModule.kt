@@ -24,8 +24,6 @@ object MainModule {
     @Provides
     fun date() = Date()
 
-    @Provides
-    fun callApiState(callHandler: CallHandler): Call.Api.State = callHandler.state
 }
 
 @Module
@@ -40,5 +38,8 @@ interface MainBindings {
 
     @Binds
     fun ipRepo(repository: IpRepository): Ip.Repository
+
+    @Binds
+    fun callServerState(state: CallService.State): Call.Server.State
 }
 

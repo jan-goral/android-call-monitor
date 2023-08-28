@@ -7,8 +7,10 @@ import android.os.Build
 import cc.jang.callmonitor.Call
 import cc.jang.callmonitor.ktor.callServer
 import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
+import javax.inject.Inject
+import javax.inject.Singleton
 
 @AndroidEntryPoint
 class CallService : Service() {
@@ -17,15 +19,15 @@ class CallService : Service() {
     lateinit var callApi: Call.Api
 
     @Inject
-    lateinit var callApiState: Call.Api.State
+    lateinit var state: State
 
     private val server by lazy { callServer(callApi) }
 
     override fun onCreate() {
         super.onCreate()
-        callApiState.update { Call.Api.Status.Syncing }
+        state.update { Call.Server.Status.Syncing() }
         server.start()
-        callApiState.update { Call.Api.Status.Started }
+        state.update { Call.Server.Status.Started() }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -37,11 +39,16 @@ class CallService : Service() {
 
     override fun onDestroy() {
         Thread {
-            callApiState.update { Call.Api.Status.Syncing }
+            state.update { Call.Server.Status.Syncing() }
             server.stop(1000, 1000)
-            callApiState.update { Call.Api.Status.Stopped }
+            state.update { Call.Server.Status.Stopped() }
         }.start()
     }
+
+
+    @Singleton
+    class State @Inject constructor() : Call.Server.State,
+        MutableStateFlow<Call.Server.Status> by MutableStateFlow(Call.Server.Status.Stopped())
 }
 
 fun Context.startCallService() {

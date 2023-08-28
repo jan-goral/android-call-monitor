@@ -22,6 +22,7 @@ import javax.inject.Singleton
 @Singleton
 class CallRepository @Inject constructor(
     @ApplicationContext private val context: Context,
+    private val serverState: Call.Server.State,
     private val permissionsRepo: PermissionsRepository,
     private val timestampDB: TimestampRoom.DB,
 ) : Call.Repository,
@@ -62,9 +63,18 @@ class CallRepository @Inject constructor(
                 contentObserver.onChange(true)
             }
         }
+        launch {
+            serverState.collect {
+                contentObserver.onChange(true)
+            }
+        }
     }
 
-    private suspend fun getLog(): List<Call.Previous> = buildList {
+    private suspend fun getLog(): List<Call.Previous> {
+        val status = serverState.value
+        if (status !is Call.Server.Status.Started) return emptyList()
+
+        val list = mutableListOf<Call.Previous>()
         val projection = arrayOf(
             CallLog.Calls.CACHED_NAME,
             CallLog.Calls.NUMBER,
@@ -72,10 +82,12 @@ class CallRepository @Inject constructor(
             CallLog.Calls.DURATION,
             CallLog.Calls.TYPE
         )
+        val selection = "${CallLog.Calls.DATE} > ?"
+        val selectionArgs = arrayOf("${status.date.time}")
         val sortOrder = CallLog.Calls.DATE + " DESC"
         context.contentResolver.query(
             CONTENT_URI, projection,
-            null, null,
+            selection, selectionArgs,
             sortOrder
         )?.use { cursor ->
             val dao = timestampDB.timestampDao
@@ -97,8 +109,9 @@ class CallRepository @Inject constructor(
                     duration = duration,
                     timesQueried = timesQueried,
                 )
-                add(entry)
+                list.add(entry)
             }
         }
+        return list
     }
 }

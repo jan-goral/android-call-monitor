@@ -1,6 +1,5 @@
 package cc.jang.callmonitor
 
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import java.net.URI
 import java.text.DateFormat
@@ -30,7 +29,6 @@ object Call {
     interface Api : Repository {
 
         val config: Config
-        val state: StateFlow<Status>
         val address: StateFlow<URI>
 
         data class Config(
@@ -41,7 +39,7 @@ object Call {
         fun getMetadata(): Metadata
 
         data class Metadata(
-            val start: Date = Date(0),
+            val start: Date? = null,
             val services: List<Service> = emptyList(),
         )
 
@@ -49,9 +47,18 @@ object Call {
             val name: String = "",
             val uri: URI = URI(""),
         )
+    }
 
-        interface State: MutableStateFlow<Status>
+    object Server {
 
-        enum class Status { Syncing, Started, Stopped }
+        interface State : StateFlow<Status>
+
+        sealed class Status {
+            val date = Date()
+
+            class Syncing : Status()
+            class Started : Status()
+            class Stopped : Status()
+        }
     }
 }

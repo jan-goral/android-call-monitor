@@ -8,9 +8,8 @@ import javax.inject.Inject
 @HiltViewModel
 class CallViewModel @Inject constructor(
     callApi: Call.Api,
+    val status: Call.Server.State,
 ) : ViewModel() {
-
-    val status = callApi.state
 
     val address = callApi.address
 

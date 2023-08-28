@@ -22,14 +22,20 @@ class CallHandlersTest {
     private lateinit var callRepo: Call.Repository
     @MockK
     private lateinit var ipRepo: Ip.Repository
+    @MockK
+    private lateinit var callServerState: Call.Server.State
+    @MockK
+    private lateinit var startedStatus: Call.Server.Status.Started
 
     @BeforeTest
     fun setUp() {
         MockKAnnotations.init(this)
         every { ipRepo.ip.value } returns "ip"
+        every { startedStatus.date } returns start
+        every { callServerState.value } returns startedStatus
         callHandler = CallHandler(
-            start = start,
             config = config,
+            state = callServerState,
             callRepo = callRepo,
             ipRepo = ipRepo
         )
