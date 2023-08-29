@@ -1,10 +1,12 @@
 package cc.jang.callmonitor.android
 
 import android.Manifest.permission.READ_CALL_LOG
+import android.util.Log
 import cc.jang.callmonitor.Call
 import cc.jang.callmonitor.room.CallRoom
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
@@ -12,6 +14,7 @@ import kotlinx.coroutines.flow.flattenMerge
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.util.Date
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -26,12 +29,18 @@ class CallRepository @Inject constructor(
 ) : Call.Repository,
     CoroutineScope by CoroutineScope(SupervisorJob() + Dispatchers.IO) {
 
+    private companion object {
+        val Tag: String = CallRepository::class.java.simpleName
+    }
+
     val statusState = MutableStateFlow<Call.Status?>(null)
 
     override val status: Call.Status?
         get() = statusState.value?.apply {
-            if (ongoing)
+            if (ongoing) {
+                Log.d(Tag, "${copy(time = Date())} - get")
                 insertTimestamp()
+            }
         }
 
     override val log = MutableStateFlow(emptyList<Call.Log>())
@@ -53,12 +62,12 @@ class CallRepository @Inject constructor(
     /**
      * Insert timestamp related to the phone number into the data base.
      */
-    private fun Call.Status.insertTimestamp() = launch {
+    private fun Call.Status.insertTimestamp(): Job {
         val timestamp = CallRoom.Timestamp(
             timestamp = System.currentTimeMillis(),
             number = number,
         )
-        timestampDao.insert(timestamp)
+        return launch { timestampDao.insert(timestamp) }
     }
 
     /**
@@ -89,6 +98,8 @@ class CallRepository @Inject constructor(
         return copy(
             name = name,
             timesQueried = timesQueried
-        )
+        ).also {
+            Log.d(Tag, "$it")
+        }
     }
 }

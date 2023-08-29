@@ -14,6 +14,7 @@ object Call {
      * Status of the current phone call (ongoing or ringing).
      */
     data class Status(
+        val time: Date = Date(0),
         val outgoing: Boolean = true,
         val ongoing: Boolean = true,
         val number: String = "",

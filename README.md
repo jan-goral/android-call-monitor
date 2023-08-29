@@ -63,6 +63,7 @@ Incoming call "ringing":
 
 ```json
 {
+  "time": "2023-08-28T18:18:49+02:00",
   "outgoing": false,
   "ongoing": false,
   "number": "6505551212",
@@ -74,6 +75,7 @@ Incoming call "offhook":
 
 ```json
 {
+  "time": "2023-08-28T18:18:49+02:00",
   "outgoing": false,
   "ongoing": true,
   "number": "6505551212",
@@ -85,6 +87,7 @@ Outgoing call:
 
 ```json
 {
+  "time": "2023-08-28T18:18:49+02:00",
   "outgoing": false,
   "ongoing": true,
   "number": "6505551212",

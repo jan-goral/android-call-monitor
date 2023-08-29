@@ -39,7 +39,7 @@ class CallServerKtTest {
         every { service.metadata } returns Call.Service.Metadata(
             start = Date(0),
             services = listOf(
-                Call.Service.Endpoint(uri = URI("https://0.0.0.0:8080/test"),)
+                Call.Service.Endpoint(uri = URI("https://0.0.0.0:8080/test"))
             )
         )
 
@@ -68,7 +68,7 @@ class CallServerKtTest {
         verify(exactly = 1) { service.status }
         assertEquals(HttpStatusCode.OK, response.status)
         assertEquals(
-            """{"outgoing":true,"ongoing":true,"number":"","name":""}""",
+            """{{"time":"01.01.1970, 00:00","outgoing":true,"ongoing":true,"number":"","name":null}""",
             response.bodyAsText(),
         )
     }

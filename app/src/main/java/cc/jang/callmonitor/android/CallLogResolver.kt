@@ -37,6 +37,7 @@ class CallLogResolver @Inject constructor(
             while (cursor.moveToNext()) {
                 val cachedName: String? = cursor.getString(nameIndex)
                 val number: String = cursor.getString(numberIndex)
+                // dateMillis is the date of RINGING state for incoming connections
                 val dateMillis: Long = cursor.getLong(dateIndex)
                 val duration: Long = cursor.getLong(durationIndex)
                 val entry = Call.Log(

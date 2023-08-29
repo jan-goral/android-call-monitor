@@ -7,6 +7,7 @@ import android.util.Log
 import cc.jang.callmonitor.Call
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.update
+import java.util.Date
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -51,7 +52,8 @@ class PhoneCallReceiver : HiltBroadcastReceiver() {
                         name = contactNameResolver.resolve(number),
                         number = number,
                         ongoing = false,
-                        outgoing = false
+                        outgoing = false,
+                        time = Date(),
                     )
 
                     else -> previous
@@ -62,17 +64,20 @@ class PhoneCallReceiver : HiltBroadcastReceiver() {
                         name = contactNameResolver.resolve(number),
                         number = number,
                         ongoing = true,
-                        outgoing = true
+                        outgoing = true,
+                        time = Date(),
                     )
 
                     else -> previous.copy(
-                        ongoing = true
+                        ongoing = true,
+                        time = Date(),
                     )
                 }
 
                 else -> previous
-            }.also {
-                println(it)
+            }.also { current ->
+                val log = current ?: previous?.copy(time = Date()).let {  "$it - finish"}
+                Log.d(Tag, "$log")
             }
         }
     }
