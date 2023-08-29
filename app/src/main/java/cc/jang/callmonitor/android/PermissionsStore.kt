@@ -15,6 +15,9 @@ import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Responsible for storing and providing information about the status of permissions required by the application.
+ */
 @Singleton
 class PermissionsStore(
     private val context: Context,
@@ -37,10 +40,13 @@ class PermissionsStore(
     val missing get() = value.filterValues { !it }.keys
 
     init {
-        update()
+        refresh()
     }
 
-    fun update() {
+    /**
+     * Gathers fresh information about permissions status.
+     */
+    fun refresh() {
         state.update {
             required.associateWith {
                 context.checkSelfPermission(it) == PERMISSION_GRANTED

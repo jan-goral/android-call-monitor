@@ -8,7 +8,7 @@ import cc.jang.callmonitor.Call
 import cc.jang.callmonitor.Ip
 import cc.jang.callmonitor.date.CallDateFormatCompatApi23
 import cc.jang.callmonitor.domain.CallService
-import cc.jang.callmonitor.room.TimestampRoom
+import cc.jang.callmonitor.room.CallRoom
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -27,7 +27,7 @@ object AppModule {
     )
 
     @Provides
-    fun timestampDao(db: TimestampRoom.DB) = db.timestampDao
+    fun timestampDao(db: CallRoom.DB) = db.timestampDao
 
     @Provides
     fun contentResolver(@ApplicationContext context: Context) = context.contentResolver!!

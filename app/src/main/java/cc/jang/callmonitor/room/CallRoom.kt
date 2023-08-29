@@ -18,7 +18,7 @@ import javax.inject.Singleton
 
 @InstallIn(SingletonComponent::class)
 @Module
-object TimestampRoom {
+object CallRoom {
 
     @Singleton
     @Provides
@@ -27,7 +27,7 @@ object TimestampRoom {
     ) = Room.databaseBuilder(
         context.applicationContext,
         DB::class.java,
-        "timestamp_database"
+        "call_database"
     ).fallbackToDestructiveMigration().build()
 
     @Database(

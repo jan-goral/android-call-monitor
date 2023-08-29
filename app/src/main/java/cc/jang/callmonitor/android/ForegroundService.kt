@@ -12,6 +12,9 @@ import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Responsible for starting, stopping, and keeping the HTTP service alive.
+ */
 @AndroidEntryPoint
 class ForegroundService : Service() {
 

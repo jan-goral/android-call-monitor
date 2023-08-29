@@ -6,6 +6,9 @@ import cc.jang.callmonitor.Call
 import java.util.Date
 import javax.inject.Inject
 
+/**
+ * Responsible for returning the list of the [Call.Log] since the given [Date].
+ */
 class CallLogResolver @Inject constructor(
     private val contentResolver: ContentResolver
 ) {
@@ -20,7 +23,7 @@ class CallLogResolver @Inject constructor(
             CallLog.Calls.TYPE
         )
     }
-    fun resolve(since: Date) = buildList {
+    fun resolve(since: Date): List<Call.Log> = buildList {
         val selectionArgs = arrayOf("${since.time}")
         contentResolver.query(
             CallLog.Calls.CONTENT_URI, projection,

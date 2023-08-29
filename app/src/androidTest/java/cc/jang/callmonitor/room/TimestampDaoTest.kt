@@ -13,14 +13,14 @@ import kotlin.test.assertEquals
 @RunWith(AndroidJUnit4::class)
 class TimestampDaoTest {
 
-    private lateinit var database: TimestampRoom.DB
-    private lateinit var imageDao: TimestampRoom.TimestampDao
+    private lateinit var database: CallRoom.DB
+    private lateinit var imageDao: CallRoom.TimestampDao
 
     @BeforeTest
     fun createDatabase() {
         database = Room.inMemoryDatabaseBuilder(
             ApplicationProvider.getApplicationContext(),
-            TimestampRoom.DB::class.java
+            CallRoom.DB::class.java
         ).build()
         imageDao = database.timestampDao
     }
@@ -35,7 +35,7 @@ class TimestampDaoTest {
     fun insertAndCountTimestamps() = runBlocking {
         val number = "123"
         (1..10L).forEach { t ->
-            val timestamp = TimestampRoom.Timestamp(number = number, timestamp = t)
+            val timestamp = CallRoom.Timestamp(number = number, timestamp = t)
             imageDao.insert(timestamp)
         }
 

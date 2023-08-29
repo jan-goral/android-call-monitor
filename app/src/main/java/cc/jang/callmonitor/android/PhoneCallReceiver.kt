@@ -27,6 +27,9 @@ class PhoneCallReceiver : HiltBroadcastReceiver() {
 
         intent.action == TelephonyManager.ACTION_PHONE_STATE_CHANGED || return
         val extras = intent.extras ?: return
+        // Unfortunately EXTRA_INCOMING_NUMBER is deprecated but other solutions require permissions like
+        // android.permission.READ_PRECISE_PHONE_STATE or android.permission.BIND_SCREENING_SERVICE
+        // available only for system apps.
         val number = extras.getString(TelephonyManager.EXTRA_INCOMING_NUMBER) ?: return
         val state = extras.getString(TelephonyManager.EXTRA_STATE) ?: return
 

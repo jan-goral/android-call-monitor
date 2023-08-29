@@ -5,8 +5,14 @@ import java.net.URI
 import java.text.DateFormat
 import java.util.Date
 
+/**
+ * The core abstraction of the phone calls.
+ */
 object Call {
 
+    /**
+     * Status of the current phone call (ongoing or ringing).
+     */
     data class Status(
         val outgoing: Boolean = true,
         val ongoing: Boolean = true,
@@ -14,6 +20,9 @@ object Call {
         val name: String? = null,
     )
 
+    /**
+     * Information about the past phone call.
+     */
     data class Log(
         val beginning: Date = Date(0),
         val duration: Long = 0,
@@ -27,6 +36,9 @@ object Call {
         val log: StateFlow<List<Log>>
     }
 
+    /**
+     * Provides all data related to the phone calls necessary for exposing to the users.
+     */
     interface Service : Repository {
 
         val config: Config
@@ -49,6 +61,9 @@ object Call {
         )
     }
 
+    /**
+     * The core abstraction of the call server.
+     */
     object Server {
 
         interface State : StateFlow<Status>

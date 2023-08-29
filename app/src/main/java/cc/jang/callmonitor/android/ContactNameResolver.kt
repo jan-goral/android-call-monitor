@@ -10,6 +10,9 @@ import android.provider.ContactsContract.PhoneLookup.DISPLAY_NAME
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 
+/**
+ * Responsible for resolving username related to the given phone number.
+ */
 class ContactNameResolver @Inject constructor(
     @ApplicationContext private val context: Context,
     private val contentResolver: ContentResolver,

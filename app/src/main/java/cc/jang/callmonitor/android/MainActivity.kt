@@ -28,7 +28,7 @@ class MainActivity : ComponentActivity() {
                 e.printStackTrace()
             }
         }
-        permissionsStore.update()
+        permissionsStore.refresh()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
