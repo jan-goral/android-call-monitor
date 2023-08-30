@@ -27,7 +27,7 @@ object AppModule {
     )
 
     @Provides
-    fun timestampDao(db: CallRoom.DB) = db.timestampDao
+    fun timesQueriedDao(db: CallRoom.DB) = db.timesQueriedDao
 
     @Provides
     fun contentResolver(@ApplicationContext context: Context) = context.contentResolver!!

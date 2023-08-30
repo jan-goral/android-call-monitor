@@ -4,11 +4,10 @@ import android.content.Context
 import androidx.room.Dao
 import androidx.room.Database
 import androidx.room.Entity
-import androidx.room.Insert
-import androidx.room.PrimaryKey
 import androidx.room.Query
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.Upsert
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -32,32 +31,30 @@ object CallRoom {
 
     @Database(
         version = 1,
-        entities = [Timestamp::class],
+        entities = [TimesQueried::class],
     )
     abstract class DB : RoomDatabase() {
-        abstract val timestampDao: TimestampDao
+        abstract val timesQueriedDao: TimesQueriedDao
     }
 
     @Dao
-    interface TimestampDao {
-        @Insert
-        suspend fun insert(timestamp: Timestamp)
+    interface TimesQueriedDao {
 
-        @Query(
-            """
-            SELECT COUNT(*) FROM timestamps 
-            WHERE number = :number
-            AND timestamp BETWEEN :startTime AND :endTime
-            """
-        )
-        suspend fun getCount(number: String, startTime: Long, endTime: Long): Int
+        @Upsert
+        suspend fun insert(timesQueried: TimesQueried)
+
+        @Query("SELECT * FROM times_queried WHERE id IN (:ids)")
+        suspend fun getByIds(ids: List<Long>): List<TimesQueried>
+
+        @Query("SELECT * FROM times_queried WHERE id = :id AND number = :number")
+        suspend fun getByPhoneId(number: String, id: Long = 0): TimesQueried?
     }
 
-    @Entity(tableName = "timestamps")
-    data class Timestamp(
-        @PrimaryKey(autoGenerate = true)
-        val id: Long = 0,
+    @Entity(tableName = "times_queried", primaryKeys = ["id", "number"])
+    data class TimesQueried(
         val number: String,
-        val timestamp: Long,
+        val id: Long = 0,
+        val count: Int = 0,
+        val start: Long = 0
     )
 }

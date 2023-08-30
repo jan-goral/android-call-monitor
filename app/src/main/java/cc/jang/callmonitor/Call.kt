@@ -25,6 +25,7 @@ object Call {
      * Information about the past phone call.
      */
     data class Log(
+        val id: Long = 0,
         val beginning: Date = Date(0),
         val duration: Long = 0,
         val number: String = "",

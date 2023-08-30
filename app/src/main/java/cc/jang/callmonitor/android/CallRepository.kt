@@ -3,10 +3,9 @@ package cc.jang.callmonitor.android
 import android.Manifest.permission.READ_CALL_LOG
 import android.util.Log
 import cc.jang.callmonitor.Call
-import cc.jang.callmonitor.room.CallRoom
+import cc.jang.callmonitor.android.TimesQueriedStore.PhoneId
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
@@ -24,7 +23,7 @@ class CallRepository @Inject constructor(
     private val permissionsStore: PermissionsStore,
     private val callLogResolver: CallLogResolver,
     private val callLogObserver: CallLogObserver,
-    private val timestampDao: CallRoom.TimestampDao,
+    private val timesQueriedStore: TimesQueriedStore,
     private val contactNameResolver: ContactNameResolver,
 ) : Call.Repository,
     CoroutineScope by CoroutineScope(SupervisorJob() + Dispatchers.IO) {
@@ -39,7 +38,9 @@ class CallRepository @Inject constructor(
         get() = statusState.value?.apply {
             if (ongoing) {
                 Log.d(Tag, "${copy(time = Date())} - get")
-                insertTimestamp()
+                launch {
+                    timesQueriedStore.bumpQueries(this@apply)
+                }
             }
         }
 
@@ -47,6 +48,7 @@ class CallRepository @Inject constructor(
 
     init {
         launch {
+            timesQueriedStore.init()
             // Getting READ_CALL_LOG permission is sufficient to start getting call logs.
             permissionsStore.first { it[READ_CALL_LOG] == true }
             flowOf(
@@ -60,46 +62,28 @@ class CallRepository @Inject constructor(
     }
 
     /**
-     * Insert timestamp related to the phone number into the data base.
-     */
-    private fun Call.Status.insertTimestamp(): Job {
-        val timestamp = CallRoom.Timestamp(
-            timestamp = System.currentTimeMillis(),
-            number = number,
-        )
-        return launch { timestampDao.insert(timestamp) }
-    }
-
-    /**
      * Fetch and return list of [Call.Log] only if the call server is currently running,
-     * otherwise return empty list
+     * otherwise return empty list.
      */
     private suspend fun getLog(): List<Call.Log> =
         when (val status = serverState.value) {
             !is Call.Server.Status.Started -> emptyList()
-            else -> callLogResolver.resolve(status.date).map { log ->
-                log.update()
+            else -> {
+                val logs = callLogResolver.resolve(status.date)
+                val ids = logs.map(CallLogResolver.Log::id)
+                val getTimesQueried = timesQueriedStore.consumeTimesQueried(ids)
+                logs.map { log ->
+                    Call.Log(
+                        id = log.id,
+                        beginning = log.beginning,
+                        duration = log.duration,
+                        number = log.number,
+                        name = log.name ?: contactNameResolver.resolve(log.number),
+                        timesQueried = getTimesQueried(PhoneId(log.number, log.id)),
+                    )
+                }.onEach {
+                    Log.d(Tag, "$it")
+                }
             }
         }
-
-    /**
-     * Update [Call.Log] for additional info like:
-     * - name related to the phone number.
-     * - how many times the ongoing call was queried from API.
-     */
-    private suspend fun Call.Log.update(): Call.Log {
-        val name = name?.takeIf { it.isNotBlank() }
-            ?: contactNameResolver.resolve(number)
-        val timesQueried = timestampDao.getCount(
-            number = number,
-            startTime = beginning.time,
-            endTime = beginning.time + duration * 1000
-        )
-        return copy(
-            name = name,
-            timesQueried = timesQueried
-        ).also {
-            Log.d(Tag, "$it")
-        }
-    }
 }
