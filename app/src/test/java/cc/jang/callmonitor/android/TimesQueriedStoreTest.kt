@@ -4,6 +4,9 @@ import cc.jang.callmonitor.Call
 import cc.jang.callmonitor.room.CallRoom
 import io.mockk.coVerify
 import io.mockk.mockk
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.joinAll
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -45,5 +48,25 @@ class TimesQueriedStoreTest {
         assertEquals(0, get(phoneIds[2]))
         coVerify(exactly = 1) { dao.getByIds(any()) }
         coVerify(exactly = 5) { dao.insert(any()) }
+    }
+
+    @Test
+    fun bumpTimesQueriedConcurrent() = runBlocking {
+        val times = 10000
+        val status = Call.Status(number = "1")
+        val phoneId = TimesQueriedStore.PhoneId(id = 1, number = "1")
+
+        val dispatcher = Dispatchers.IO
+        (1..times).map {
+            launch(dispatcher) {
+                store.bumpQueries(status)
+            }
+        }.joinAll()
+
+        val getTimes = store.consumeTimesQueried(listOf(1))
+
+        coVerify(exactly = times) { dao.insert(any()) }
+        val actual = getTimes(phoneId)
+        assertEquals(times, actual)
     }
 }

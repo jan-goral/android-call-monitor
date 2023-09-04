@@ -7,7 +7,6 @@ import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import cc.jang.callmonitor.Ip
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.update
 import java.net.Inet4Address
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -31,15 +30,15 @@ class IpRepository @Inject constructor(
     init {
         cm.registerNetworkCallback(networkRequest, this)
         val linkProperties = cm.getLinkProperties(cm.activeNetwork)
-        ip.update { linkProperties?.inet4Address ?: DefaultIP }
+        ip.value = linkProperties?.inet4Address ?: DefaultIP
     }
 
     override fun onLost(network: Network) {
-        ip.update { DefaultIP }
+        ip.value = DefaultIP
     }
 
     override fun onLinkPropertiesChanged(network: Network, linkProperties: LinkProperties) {
-        ip.update { linkProperties.inet4Address ?: DefaultIP }
+        ip.value = linkProperties.inet4Address ?: DefaultIP
     }
 
     private val LinkProperties.inet4Address

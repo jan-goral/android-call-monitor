@@ -68,7 +68,7 @@ class CallServerKtTest {
         verify(exactly = 1) { service.status }
         assertEquals(HttpStatusCode.OK, response.status)
         assertEquals(
-            """{{"time":"01.01.1970, 00:00","outgoing":true,"ongoing":true,"number":"","name":null}""",
+            """{"time":"01.01.1970, 00:00","outgoing":true,"ongoing":true,"number":"","name":null}""",
             response.bodyAsText(),
         )
     }
@@ -104,7 +104,7 @@ class CallServerKtTest {
         verify(exactly = 1) { service.log.value }
         assertEquals(HttpStatusCode.OK, response.status)
         assertEquals(
-            """[{"beginning":"01.01.1970, 00:00","duration":0,"number":"","name":null,"timesQueried":0}]""",
+            """[{"id":0,"beginning":"01.01.1970, 00:00","duration":0,"number":"","name":null,"timesQueried":0}]""",
             response.bodyAsText(),
         )
     }

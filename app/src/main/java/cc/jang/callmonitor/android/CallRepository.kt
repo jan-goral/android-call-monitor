@@ -5,8 +5,8 @@ import android.util.Log
 import cc.jang.callmonitor.Call
 import cc.jang.callmonitor.android.TimesQueriedStore.PhoneId
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flattenMerge
@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.Date
+import java.util.concurrent.Executors.newSingleThreadExecutor
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -26,13 +27,13 @@ class CallRepository @Inject constructor(
     private val timesQueriedStore: TimesQueriedStore,
     private val contactNameResolver: ContactNameResolver,
 ) : Call.Repository,
-    CoroutineScope by CoroutineScope(SupervisorJob() + Dispatchers.IO) {
+    CoroutineScope by CoroutineScope(SupervisorJob() + newSingleThreadExecutor().asCoroutineDispatcher()) {
 
     private companion object {
         val Tag: String = CallRepository::class.java.simpleName
     }
 
-    val statusState = MutableStateFlow<Call.Status?>(null)
+    private val statusState = MutableStateFlow<Call.Status?>(null)
 
     override val status: Call.Status?
         get() = statusState.value?.apply {
@@ -43,6 +44,12 @@ class CallRepository @Inject constructor(
                 }
             }
         }
+
+    fun updateStatus(block: (Call.Status?) -> Call.Status?) {
+        launch {
+            statusState.update(block)
+        }
+    }
 
     override val log = MutableStateFlow(emptyList<Call.Log>())
 

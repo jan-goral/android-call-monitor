@@ -5,6 +5,8 @@ import cc.jang.callmonitor.room.CallRoom
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.getAndUpdate
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -12,12 +14,13 @@ import javax.inject.Singleton
 class TimesQueriedStore @Inject constructor(
     private val dao: CallRoom.TimesQueriedDao,
 ) {
+    private val mutex = Mutex()
     private val current = MutableStateFlow(emptyMap<String, CallRoom.TimesQueried>())
 
     /**
      * Loads cached unassigned list of [CallRoom.TimesQueried] values into memory.
      */
-    suspend fun init() {
+    suspend fun init() = mutex.withLock {
         current.update {
             dao.getByIds(listOf(0))
                 .associateBy { it.number }
@@ -27,7 +30,7 @@ class TimesQueriedStore @Inject constructor(
     /**
      * Increments queries count for given [Call.Status].
      */
-    suspend fun bumpQueries(status: Call.Status) {
+    suspend fun bumpQueries(status: Call.Status) = mutex.withLock {
         val number = status.number
         current.getAndUpdate { map ->
 
@@ -53,7 +56,7 @@ class TimesQueriedStore @Inject constructor(
     /**
      * Consumes unassigned TimesQueried and returns provider for both unassigned and assigned times queried value.
      */
-    suspend fun consumeTimesQueried(ids: List<Long>): suspend (PhoneId) -> Int {
+    suspend fun consumeTimesQueried(ids: List<Long>): suspend (PhoneId) -> Int = mutex.withLock {
 
         // consume the map of newest TimesQueried not assigned to any Call.Log id
         val unassigned: MutableMap<String, CallRoom.TimesQueried> = current

@@ -36,7 +36,7 @@ class PhoneCallReceiver : HiltBroadcastReceiver() {
 
         super.onReceive(context, intent) // inject dependencies via Hilt
 
-        callRepo.statusState.update { previous ->
+        callRepo.updateStatus { previous ->
             when {
 
                 state == TelephonyManager.EXTRA_STATE_IDLE -> null
