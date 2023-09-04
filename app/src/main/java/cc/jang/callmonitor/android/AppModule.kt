@@ -65,5 +65,8 @@ object AppModule {
 
         @Binds
         fun callServerState(state: ForegroundService.State): Call.Server.State
+
+        @Binds
+        fun toggleServer(toggle: ForegroundService.Toggle): Call.Server.Toggle
     }
 }

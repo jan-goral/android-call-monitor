@@ -6,7 +6,6 @@ import android.telephony.TelephonyManager
 import android.util.Log
 import cc.jang.callmonitor.Call
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.update
 import java.util.Date
 import javax.inject.Inject
 

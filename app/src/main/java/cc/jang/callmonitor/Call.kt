@@ -68,6 +68,8 @@ object Call {
      */
     object Server {
 
+        interface Toggle : (Boolean) -> Unit
+
         interface State : StateFlow<Status>
 
         sealed class Status {

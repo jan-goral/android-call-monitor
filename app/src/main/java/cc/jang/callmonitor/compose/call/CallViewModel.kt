@@ -9,6 +9,7 @@ import javax.inject.Inject
 class CallViewModel @Inject constructor(
     callService: Call.Service,
     val status: Call.Server.State,
+    val toggle: Call.Server.Toggle,
 ) : ViewModel() {
 
     val address = callService.address

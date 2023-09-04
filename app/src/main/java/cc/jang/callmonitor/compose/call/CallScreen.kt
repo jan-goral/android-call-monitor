@@ -35,7 +35,8 @@ fun CallScreen(
     CallScreen(
         status = status,
         address = address.toString(),
-        log = items
+        log = items,
+        onToggleServerClick = model.toggle
     )
 }
 
@@ -51,7 +52,7 @@ fun CallScreenPreview() = CallMonitorTheme {
                 number = (it * 100000).toString(),
                 duration = (it * 10L),
             )
-        }
+        },
     )
 }
 
@@ -61,11 +62,14 @@ fun CallScreen(
     status: Call.Server.Status,
     address: String,
     log: List<Call.Log>,
+    onToggleServerClick: (Boolean) -> Unit = {},
 ) = Scaffold(
     topBar = {
         TopAppBar(
             title = { Text(text = "Call Monitor") },
-            actions = { CallServiceToggle(status) }
+            actions = {
+                CallServiceToggle(status, onToggleServerClick = onToggleServerClick)
+            }
         )
     },
 ) {

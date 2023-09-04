@@ -5,8 +5,9 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import cc.jang.callmonitor.Call
-import cc.jang.callmonitor.ktor.callServer
+import cc.jang.callmonitor.ktor.CallServer
 import dagger.hilt.android.AndroidEntryPoint
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import javax.inject.Inject
@@ -19,12 +20,10 @@ import javax.inject.Singleton
 class ForegroundService : Service() {
 
     @Inject
-    lateinit var callService: Call.Service
-
-    @Inject
     lateinit var state: State
 
-    private val server by lazy { callServer(callService) }
+    @Inject
+    lateinit var server: CallServer
 
     override fun onCreate() {
         super.onCreate()
@@ -52,9 +51,18 @@ class ForegroundService : Service() {
     @Singleton
     class State @Inject constructor() : Call.Server.State,
         MutableStateFlow<Call.Server.Status> by MutableStateFlow(Call.Server.Status.Stopped())
+
+    class Toggle @Inject constructor(
+        @ApplicationContext private val context: Context
+    ) : Call.Server.Toggle {
+        override fun invoke(on: Boolean) = when {
+            on -> context.startForegroundService()
+            else -> context.stopForegroundService()
+        }
+    }
 }
 
-fun Context.startForegroundService() {
+private fun Context.startForegroundService() {
     val intent = Intent(this, ForegroundService::class.java)
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
         startForegroundService(intent)
@@ -63,7 +71,7 @@ fun Context.startForegroundService() {
     }
 }
 
-fun Context.stopForegroundService() {
+private fun Context.stopForegroundService() {
     val intent = Intent(this, ForegroundService::class.java)
     stopService(intent)
 }

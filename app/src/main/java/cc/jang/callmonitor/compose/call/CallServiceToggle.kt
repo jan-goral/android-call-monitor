@@ -18,28 +18,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import cc.jang.callmonitor.Call
 import cc.jang.callmonitor.R
-import cc.jang.callmonitor.android.startForegroundService
-import cc.jang.callmonitor.android.stopForegroundService
-
-
-@Composable
-fun CallServiceToggle(
-   status: Call.Server.Status
-) {
-    val context = LocalContext.current
-    CallServiceToggle(status) {
-        when (status) {
-            is Call.Server.Status.Stopped -> context.startForegroundService()
-            is Call.Server.Status.Started -> context.stopForegroundService()
-            is Call.Server.Status.Syncing -> Unit
-        }
-    }
-}
 
 @Preview
 @Composable
@@ -61,10 +43,13 @@ fun CallServiceTogglePreview() {
 fun CallServiceToggle(
     status: Call.Server.Status,
     enabled: Boolean = status !is Call.Server.Status.Syncing,
-    onClick: () -> Unit,
+    onToggleServerClick: (Boolean) -> Unit,
 ) {
     IconButton(
-        onClick = onClick,
+        onClick = {
+            val turnOn = status is Call.Server.Status.Stopped
+            onToggleServerClick(turnOn)
+        },
         enabled = enabled,
     ) {
         val res = when (status) {

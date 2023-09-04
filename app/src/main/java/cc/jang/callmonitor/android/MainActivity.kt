@@ -7,6 +7,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts.RequestMultiplePermissions
+import cc.jang.callmonitor.Call
 import cc.jang.callmonitor.compose.call.CallScreen
 import cc.jang.callmonitor.compose.theme.CallMonitorTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -18,12 +19,15 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var permissionsStore: PermissionsStore
 
+    @Inject
+    lateinit var toggleServer: Call.Server.Toggle
+
     private val askForPermissions = registerForActivityResult(
         RequestMultiplePermissions()
     ) { result ->
         if (SDK_INT >= TIRAMISU && result[POST_NOTIFICATIONS] == true) {
             try {
-                startForegroundService()
+                toggleServer(true)
             } catch (e: Throwable) {
                 e.printStackTrace()
             }
@@ -35,7 +39,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         askForPermissions.launch(permissionsStore.missing.toTypedArray())
         try {
-            startForegroundService()
+            toggleServer(true)
         } catch (e: Throwable) {
             e.printStackTrace()
         }
