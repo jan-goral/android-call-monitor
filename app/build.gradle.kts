@@ -76,6 +76,7 @@ dependencies {
     // Kotlin
     testImplementation(kotlin("test"))
     androidTestImplementation(kotlin("test"))
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
 
     // Mockk
     val mockkVersion = "1.13.7"

@@ -4,9 +4,9 @@ import android.Manifest.permission.READ_CALL_LOG
 import android.util.Log
 import cc.jang.callmonitor.Call
 import cc.jang.callmonitor.android.TimesQueriedStore.PhoneId
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flattenMerge
@@ -14,8 +14,8 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.Date
-import java.util.concurrent.Executors.newSingleThreadExecutor
 import javax.inject.Inject
+import javax.inject.Named
 import javax.inject.Singleton
 
 @Singleton
@@ -26,8 +26,9 @@ class CallRepository @Inject constructor(
     private val callLogObserver: CallLogObserver,
     private val timesQueriedStore: TimesQueriedStore,
     private val contactNameResolver: ContactNameResolver,
+    @Named("call_repo_dispatcher") dispatcher: CoroutineDispatcher,
 ) : Call.Repository,
-    CoroutineScope by CoroutineScope(SupervisorJob() + newSingleThreadExecutor().asCoroutineDispatcher()) {
+    CoroutineScope by CoroutineScope(SupervisorJob() + dispatcher) {
 
     private companion object {
         val Tag: String = CallRepository::class.java.simpleName
@@ -57,9 +58,9 @@ class CallRepository @Inject constructor(
         launch {
             timesQueriedStore.init()
             // Getting READ_CALL_LOG permission is sufficient to start getting call logs.
-            permissionsStore.first { it[READ_CALL_LOG] == true }
+            permissionsStore.state.first { it[READ_CALL_LOG] == true }
             flowOf(
-                permissionsStore,
+                permissionsStore.state,
                 serverState,
                 callLogObserver.flow(),
             ).flattenMerge().collect {

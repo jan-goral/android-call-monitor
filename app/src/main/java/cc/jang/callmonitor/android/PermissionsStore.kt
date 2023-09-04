@@ -19,14 +19,11 @@ import javax.inject.Singleton
  * Responsible for storing and providing information about the status of permissions required by the application.
  */
 @Singleton
-class PermissionsStore(
-    private val context: Context,
-    private val state: MutableStateFlow<Map<String, Boolean>>,
-) : StateFlow<Map<String, Boolean>> by state {
+class PermissionsStore @Inject constructor(
+    @ApplicationContext private val context: Context,
+) {
 
-    @Inject
-    constructor(@ApplicationContext context: Context) :
-        this(context, MutableStateFlow(emptyMap()))
+    private val _state = MutableStateFlow(emptyMap<String, Boolean>())
 
     private val required = listOf(
         READ_CALL_LOG,
@@ -36,18 +33,20 @@ class PermissionsStore(
         if (SDK_INT >= TIRAMISU) add(POST_NOTIFICATIONS)
     }
 
-    val granted get() = value.filterValues { it }.keys
-    val missing get() = value.filterValues { !it }.keys
+    val granted get() = state.value.filterValues { it }.keys
+    val missing get() = state.value.filterValues { !it }.keys
 
     init {
         refresh()
     }
 
+    val state: StateFlow<Map<String, Boolean>> get() = _state
+
     /**
      * Gathers fresh information about permissions status.
      */
     fun refresh() {
-        state.update {
+        _state.update {
             required.associateWith {
                 context.checkSelfPermission(it) == PERMISSION_GRANTED
             }

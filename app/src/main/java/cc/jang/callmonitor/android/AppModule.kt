@@ -15,6 +15,11 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.asCoroutineDispatcher
+import java.util.concurrent.Executors.*
+import javax.inject.Named
+import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -38,6 +43,11 @@ object AppModule {
     @Provides
     fun connectivityManager(@ApplicationContext context: Context): ConnectivityManager =
         context.getSystemService()!!
+
+    @Provides
+    @Named("call_repo_dispatcher")
+    @Singleton
+    fun repoDispatcher(): CoroutineDispatcher = newSingleThreadExecutor().asCoroutineDispatcher()
 
 
     @Module
