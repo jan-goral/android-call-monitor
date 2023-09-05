@@ -12,6 +12,7 @@ import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.response.respond
 import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
+import java.util.Date
 import javax.inject.Inject
 
 class CallServer @Inject constructor(
@@ -26,6 +27,7 @@ fun callServer(
 
 fun Application.callModule(
     service: Call.Service,
+    startDate: Date = Date()
 ) {
     install(ContentNegotiation) {
         jackson {
@@ -40,7 +42,7 @@ fun Application.callModule(
             call.respond(service.status ?: Unit)
         }
         get("/log") {
-            call.respond(service.log.value)
+            call.respond(service.log(startDate))
         }
     }
 }

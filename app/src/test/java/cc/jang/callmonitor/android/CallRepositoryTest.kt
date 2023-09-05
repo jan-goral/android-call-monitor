@@ -10,7 +10,6 @@ import io.mockk.impl.annotations.RelaxedMockK
 import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
@@ -20,13 +19,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertSame
 
 class CallRepositoryTest {
-
-    private val callServerStateFlow =
-        MutableStateFlow<Call.Server.Status>(Call.Server.Status.Stopped())
-
-    private val callServerState = object :
-        Call.Server.State,
-        StateFlow<Call.Server.Status> by callServerStateFlow {}
 
     @RelaxedMockK
     lateinit var permissionsStore: PermissionsStore
@@ -55,8 +47,9 @@ class CallRepositoryTest {
     fun updateAndGetStatus() = runTest {
         // given
         val given = Call.Status(ongoing = true)
+        every { callLogResolver.resolve(any()) } returns emptyList()
+        coEvery { timesQueriedStore.consumeTimesQueried(any()) } returns mockk()
         callRepository = CallRepository(
-            serverState = callServerState,
             permissionsStore = permissionsStore,
             callLogResolver = callLogResolver,
             callLogObserver = callLogObserver,
@@ -87,7 +80,6 @@ class CallRepositoryTest {
         every { callLogResolver.resolve(any()) } returns listOf(CallLogResolver.Log())
         every { contactNameResolver.resolve(any()) } returns null
         callRepository = CallRepository(
-            serverState = callServerState,
             permissionsStore = permissionsStore,
             callLogResolver = callLogResolver,
             callLogObserver = callLogObserver,
@@ -98,8 +90,6 @@ class CallRepositoryTest {
         advanceUntilIdle()
 
         // when
-        callServerStateFlow.value = Call.Server.Status.Started()
-        advanceUntilIdle()
         val actual = callRepository.log.value
 
         // then

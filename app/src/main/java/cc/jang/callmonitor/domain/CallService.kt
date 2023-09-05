@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import java.net.URI
+import java.util.Date
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -43,6 +44,8 @@ class CallService @Inject constructor(
                 services = services
             )
         }
+
+    override fun log(since: Date): List<Call.Log> = log.value.filter { it.beginning > since }
 
     private val String.uri get() = URI.create("http://" + this + ":" + config.port)
 }

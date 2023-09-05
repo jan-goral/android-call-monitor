@@ -95,13 +95,13 @@ class CallServerKtTest {
     fun testLog() = testApplication {
         // given
         application { callModule(service) }
-        every { service.log.value } returns listOf(Call.Log())
+        every { service.log(any()) } returns listOf(Call.Log())
 
         // when
         val response = client.get("/log")
 
         // then
-        verify(exactly = 1) { service.log.value }
+        verify(exactly = 1) { service.log(any()) }
         assertEquals(HttpStatusCode.OK, response.status)
         assertEquals(
             """[{"id":0,"beginning":"01.01.1970, 00:00","duration":0,"number":"","name":null,"timesQueried":0}]""",

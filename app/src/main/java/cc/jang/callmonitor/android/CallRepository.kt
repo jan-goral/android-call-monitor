@@ -20,7 +20,6 @@ import javax.inject.Singleton
 
 @Singleton
 class CallRepository @Inject constructor(
-    private val serverState: Call.Server.State,
     private val permissionsStore: PermissionsStore,
     private val callLogResolver: CallLogResolver,
     private val callLogObserver: CallLogObserver,
@@ -61,7 +60,6 @@ class CallRepository @Inject constructor(
             permissionsStore.state.first { it[READ_CALL_LOG] == true }
             flowOf(
                 permissionsStore.state,
-                serverState,
                 callLogObserver.flow(),
             ).flattenMerge().collect {
                 log.update { getLog() }
@@ -73,25 +71,21 @@ class CallRepository @Inject constructor(
      * Fetch and return list of [Call.Log] only if the call server is currently running,
      * otherwise return empty list.
      */
-    private suspend fun getLog(): List<Call.Log> =
-        when (val status = serverState.value) {
-            !is Call.Server.Status.Started -> emptyList()
-            else -> {
-                val logs = callLogResolver.resolve(status.date)
-                val ids = logs.map(CallLogResolver.Log::id)
-                val getTimesQueried = timesQueriedStore.consumeTimesQueried(ids)
-                logs.map { log ->
-                    Call.Log(
-                        id = log.id,
-                        beginning = log.beginning,
-                        duration = log.duration,
-                        number = log.number,
-                        name = log.name ?: contactNameResolver.resolve(log.number),
-                        timesQueried = getTimesQueried(PhoneId(log.number, log.id)),
-                    )
-                }.onEach {
-                    Log.d(Tag, "$it")
-                }
-            }
+    private suspend fun getLog(): List<Call.Log> {
+        val logs = callLogResolver.resolve(Date(0))
+        val ids = logs.map(CallLogResolver.Log::id)
+        val getTimesQueried = timesQueriedStore.consumeTimesQueried(ids)
+        return logs.map { log ->
+            Call.Log(
+                id = log.id,
+                beginning = log.beginning,
+                duration = log.duration,
+                number = log.number,
+                name = log.name ?: contactNameResolver.resolve(log.number),
+                timesQueried = getTimesQueried(PhoneId(log.number, log.id)),
+            )
+        }.onEach {
+            Log.d(Tag, "$it")
         }
+    }
 }

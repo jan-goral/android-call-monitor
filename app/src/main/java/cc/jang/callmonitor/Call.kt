@@ -46,6 +46,7 @@ object Call {
         val config: Config
         val address: StateFlow<URI>
         val metadata: Metadata
+        fun log(since: Date): List<Log>
 
         data class Config(
             val port: Int,
